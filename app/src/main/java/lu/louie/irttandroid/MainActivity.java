@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
                     InputStream is = process.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                     while (!Thread.currentThread().isInterrupted()) {
-                        while (is.available() > 0 && (read = reader.read(buffer)) > 0) {
+                        while (!Thread.currentThread().isInterrupted() && is.available() > 0 && (read = reader.read(buffer)) > 0) {
                             output.append(buffer, 0, read);
                             final String text = output.toString();
                             output.setLength(0);
