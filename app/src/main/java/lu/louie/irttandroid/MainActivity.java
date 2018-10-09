@@ -2,6 +2,7 @@ package lu.louie.irttandroid;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.net.wifi.WifiInfo;
@@ -14,6 +15,8 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.vistrav.ask.Ask;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,6 +58,18 @@ public class MainActivity extends AppCompatActivity {
         copyAssets(appFileDirectory, "irtt");
         File execFile = new File(executableFilePath);
         execFile.setExecutable(true);
+
+        // Check the external directory is create or not
+        // If not, create it
+        Ask.on(this)
+                .forPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .withRationales("We need WRITE_EXTERNAL_STORAGE permission for irtt client output options," +
+                        "otherwise it will not work.")
+                .go();
+        File appExternalDirectory = getExternalFilesDir(null);
+        Log.d(TAG, "external directory: " + appExternalDirectory);
+        if (!appExternalDirectory.isDirectory() || !appExternalDirectory.exists())
+            Log.d(TAG, "MKDIRS: " + appExternalDirectory.mkdirs());2
 
         // Setup SSID and IP for user
         TextView textView = findViewById(R.id.wifiInfo);
@@ -137,6 +152,16 @@ public class MainActivity extends AppCompatActivity {
             String executableFilePath = appFileDirectory + "/irtt";
             String argv[] = {executableFilePath, irttServerClientSwitch.isChecked() ? "client" : "server"};
             String options[] = irttOptions.getText().toString().split(" ");
+
+            // Check options, if we get -o, then patch the path to /sdcard/Android/data
+            // We don't care if the next option is a path or not, just patch it.
+            // User will found that error, maybe :(
+            for (int i = 0; i < options.length; ++i) {
+                if (options[i].equals("-o")) {
+                    options[i + 1] = getExternalFilesDir(null) + "/" + options[i + 1];
+                }
+            }
+
             String cmd[] = combineArrays(argv, options);
             Log.d(TAG, "CMD: " + Arrays.toString(cmd));
 
