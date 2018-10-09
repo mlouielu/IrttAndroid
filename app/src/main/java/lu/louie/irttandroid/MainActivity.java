@@ -132,9 +132,10 @@ public class MainActivity extends AppCompatActivity {
     Runnable irttRunnable = new Runnable() {
         public void run() {
             EditText irttOptions = findViewById(R.id.irttOptions);
+            Switch irttServerClientSwitch = findViewById(R.id.irttServerClientSwitch);
             String appFileDirectory = getFilesDir().getPath();
             String executableFilePath = appFileDirectory + "/irtt";
-            String argv[] = {executableFilePath, "server"};
+            String argv[] = {executableFilePath, irttServerClientSwitch.isChecked() ? "client" : "server"};
             String options[] = irttOptions.getText().toString().split(" ");
             String cmd[] = combineArrays(argv, options);
             Log.d(TAG, "CMD: " + Arrays.toString(cmd));
@@ -153,9 +154,11 @@ public class MainActivity extends AppCompatActivity {
                 StringBuffer output = new StringBuffer();
                 try {
                     InputStream is = process.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    InputStream es = process.getErrorStream();
+                    BufferedReader ireader = new BufferedReader(new InputStreamReader(is));
+                    BufferedReader ereader = new BufferedReader(new InputStreamReader(es));
                     while (!Thread.currentThread().isInterrupted()) {
-                        while (!Thread.currentThread().isInterrupted() && is.available() > 0 && (read = reader.read(buffer)) > 0) {
+                        while (!Thread.currentThread().isInterrupted() && is.available() > 0 && (read = ireader.read(buffer)) > 0) {
                             output.append(buffer, 0, read);
                             final String text = output.toString();
                             output.setLength(0);
@@ -169,8 +172,24 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                         }
+                        while (!Thread.currentThread().isInterrupted() && es.available() > 0 && (read = ereader.read(buffer)) > 0) {
+                            output.append(buffer, 0, read);
+                            final String text = output.toString();
+                            output.setLength(0);
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    TextView textView = findViewById(R.id.irttStdout);
+                                    textView.append(text);
+                                    while (textView.canScrollVertically(1))
+                                        textView.scrollBy(0, 10);
+                                }
+                            });
+                        }
+
                     }
-                    reader.close();
+                    ireader.close();
+                    ereader.close();
                 } catch (IOException e) {
 
                 }
