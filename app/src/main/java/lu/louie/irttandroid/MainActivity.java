@@ -10,12 +10,17 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.afollestad.materialdialogs.MaterialDialog;
+import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
+import com.github.javiersantos.materialstyleddialogs.enums.Style;
 import com.llollox.androidtoggleswitch.widgets.ToggleSwitch;
 import com.vistrav.ask.Ask;
 
@@ -46,6 +51,35 @@ public class MainActivity extends AppCompatActivity {
         sb.append(String.valueOf((ip&0xFFFFFF) >>> 16)).append(".");
         sb.append(String.valueOf(ip>>>24));
         return sb.toString();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_clean_output:
+                TextView textView = findViewById(R.id.irttStdout);
+                textView.setText("");
+                break;
+            case R.id.action_help:
+                new MaterialStyledDialog.Builder(this)
+                        .setTitle("Help")
+                        .setDescription("You can use the '-h' option to show help message of IRTT\n\n" +
+                                "If you have any bug report or feature request, please send an email to <git@louie.lu>\n\n" +
+                                "Also, the source code of this APP can be found on <github.com/mlouielu/irttandroid>"
+                        )
+                        .setStyle(Style.HEADER_WITH_TITLE)
+                        .setPositiveText("OK")
+                        .show();
+                break;
+        }
+        return true;
     }
 
     @Override
