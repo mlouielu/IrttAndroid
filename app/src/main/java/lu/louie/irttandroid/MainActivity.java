@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.llollox.androidtoggleswitch.widgets.ToggleSwitch;
 import com.vistrav.ask.Ask;
 
 import java.io.BufferedReader;
@@ -69,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         File appExternalDirectory = getExternalFilesDir(null);
         Log.d(TAG, "external directory: " + appExternalDirectory);
         if (!appExternalDirectory.isDirectory() || !appExternalDirectory.exists())
-            Log.d(TAG, "MKDIRS: " + appExternalDirectory.mkdirs());2
+            Log.d(TAG, "MKDIRS: " + appExternalDirectory.mkdirs());
 
         // Setup SSID and IP for user
         TextView textView = findViewById(R.id.wifiInfo);
@@ -92,6 +93,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        // Setup Server/Client toggleSwitch
+        ToggleSwitch ts = findViewById(R.id.irttServerClientSwitch);
+        ts.setCheckedPosition(0);
     }
 
     private static boolean copyFile(InputStream inputStream, OutputStream out) {
@@ -147,10 +151,11 @@ public class MainActivity extends AppCompatActivity {
     Runnable irttRunnable = new Runnable() {
         public void run() {
             EditText irttOptions = findViewById(R.id.irttOptions);
-            Switch irttServerClientSwitch = findViewById(R.id.irttServerClientSwitch);
+            ToggleSwitch irttServerClientSwitch = findViewById(R.id.irttServerClientSwitch);
             String appFileDirectory = getFilesDir().getPath();
             String executableFilePath = appFileDirectory + "/irtt";
-            String argv[] = {executableFilePath, irttServerClientSwitch.isChecked() ? "client" : "server"};
+            String argv[] = {
+                    executableFilePath, irttServerClientSwitch.getCheckedPosition() == 1 ? "client" : "server"};
             String options[] = irttOptions.getText().toString().split(" ");
 
             // Check options, if we get -o, then patch the path to /sdcard/Android/data
